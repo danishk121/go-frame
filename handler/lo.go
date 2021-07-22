@@ -30,7 +30,7 @@ func (p *LO) AddLO(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (p *LO) GetLO(rw http.ResponseWriter, r *http.Request) {
-	lp := p.s.GetAllData()
+	lp, _ := p.s.GetAllData()
 	e := json.NewEncoder(rw)
 	err := e.Encode(lp)
 	if err != nil {

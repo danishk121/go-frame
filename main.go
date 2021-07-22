@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -12,18 +11,15 @@ import (
 
 	"github.com/danishk121/go-frame/handler"
 	"github.com/danishk121/go-frame/service"
+	"github.com/danishk121/go-frame/store"
 	"github.com/gorilla/mux"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-
-	"github.com/joho/godotenv"
 )
 
 func main() {
 
 	l := log.New(os.Stdout, "LO/LI-api ", log.LstdFlags)
-	d, _ := ConfigureDatabase()
-	s := service.NewLOService(l, d)
+	store.Initialize()
+	s := service.NewLOService(l)
 
 	// create the handlers
 	lh := handler.NewLO(l, s)
@@ -51,37 +47,6 @@ func InitLORoutes(sm *mux.Router, lh *handler.LO) {
 }
 
 func InitLIRoutes(sm *mux.Router) {
-
-}
-
-func ConfigureDatabase() (*gorm.DB, error) {
-
-	var appConfig map[string]string
-	appConfig, confErr := godotenv.Read()
-
-	if confErr != nil {
-		log.Fatal("Error reading .env file")
-		return nil, confErr
-	}
-
-	// Ex: user:password@tcp(host:port)/dbname
-	mysqlCredentials := fmt.Sprintf(
-		"%s:%s@%s(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
-		appConfig["MYSQL_USER"],
-		appConfig["MYSQL_PASSWORD"],
-		appConfig["MYSQL_PROTOCOL"],
-		appConfig["MYSQL_HOST"],
-		appConfig["MYSQL_PORT"],
-		appConfig["MYSQL_DBNAME"],
-	)
-
-	database, confErr := gorm.Open(mysql.Open(mysqlCredentials), &gorm.Config{})
-
-	if confErr != nil {
-		log.Printf("Error starting server: %s\n", confErr)
-		os.Exit(1)
-	}
-	return database, confErr
 
 }
 

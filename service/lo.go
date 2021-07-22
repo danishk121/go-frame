@@ -2,37 +2,38 @@ package service
 
 import (
 	"log"
-	"strings"
 
 	"github.com/danishk121/go-frame/model"
-	"github.com/danishk121/go-frame/repository"
-	"gorm.io/gorm"
+	"github.com/danishk121/go-frame/store"
+	"github.com/danishk121/go-frame/store/adapter"
 )
 
 type LOService struct {
-	l *log.Logger
-	d *gorm.DB
+	l     *log.Logger
+	store adapter.Store
 }
 
-func NewLOService(l *log.Logger, d *gorm.DB) *LOService {
-	repository.Setup(d)
-	return &LOService{l, d}
-}
-
-func (p *LOService) CreateLOEntry(data model.LO) {
-	model := &repository.LOData{
-		Name:        data.Name,
-		Description: data.Description,
-		Code:        data.Code,
-		Applicable:  strings.Join(data.ApplicableClasses, ","),
+func NewLOService(l *log.Logger) *LOService {
+	return &LOService{
+		l:     l,
+		store: store.Store,
 	}
 
-	repository.Add(model, p.d)
-
 }
 
-func (p *LOService) GetAllData() []repository.LOData {
-	var response []repository.LOData
-	repository.GetAll(p.d, &response)
-	return response
+func (p *LOService) CreateLOEntry(data model.LO) (*model.LO, error) {
+	lo, err := p.store.LO().Create(&data)
+	if err != nil {
+		return nil, err
+	}
+	return lo, nil
+}
+
+func (p *LOService) GetAllData() (*model.LO, error) {
+
+	lo, err := p.store.LO().Get()
+	if err != nil {
+		return nil, err
+	}
+	return lo, nil
 }
